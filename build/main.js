@@ -7956,7 +7956,7 @@ var $author$project$Api$equipSlotManifestDecoder = A2(
 	$author$project$Api$manifestFilter,
 	$elm$json$Json$Decode$dict(
 		$elm$json$Json$Decode$maybe($author$project$Api$equipSlotTypeDecoder)));
-var $author$project$Config$clientId = '27044';
+var $author$project$Config$clientId = '32991';
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $truqu$elm_oauth2$Internal$Code = 0;
 var $elm$core$String$concat = function (strings) {
@@ -8302,7 +8302,7 @@ var $author$project$Api$itemRefDecoder = A3(
 		$elm$core$String$fromInt,
 		A2($elm$json$Json$Decode$field, 'itemHash', $elm$json$Json$Decode$int)),
 	A2($elm$json$Json$Decode$field, 'itemInstanceId', $elm$json$Json$Decode$string));
-var $author$project$Config$apiKey = '7d17432adb814a69869fe5e6e118de53';
+var $author$project$Config$apiKey = '843ecb4cc9bb4a80a986bd0dff47c5c0';
 var $elm$http$Http$Header = F2(
 	function (a, b) {
 		return {$: 0, a: a, b: b};
