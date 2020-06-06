@@ -983,11 +983,11 @@ view model =
 
         , hDivider
 
-        , el [ width fill, scrollbarY ]
-        <| if model.viewAbout
+        , if model.viewAbout
             then viewAbout model
             else if isPortrait
-                then column
+                then el [ width fill, scrollbarY ] 
+                    <| column
                     [ height fill
                     , width fill
                     ]

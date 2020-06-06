@@ -16972,14 +16972,14 @@ var $author$project$Main$view = function (model) {
 				[
 					$author$project$Main$viewHeader(model),
 					$author$project$Main$hDivider,
-					A2(
+					model.aS ? $author$project$Main$viewAbout(model) : (isPortrait ? A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(
 						[
 							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
 							$mdgriffith$elm_ui$Element$scrollbarY
 						]),
-					model.aS ? $author$project$Main$viewAbout(model) : (isPortrait ? A2(
+					A2(
 						$mdgriffith$elm_ui$Element$column,
 						_List_fromArray(
 							[
@@ -16998,19 +16998,19 @@ var $author$project$Main$view = function (model) {
 								$author$project$Main$viewMain(model)),
 								$author$project$Main$hDivider,
 								$author$project$Main$viewCustomItems(model)
-							])) : A2(
-						$mdgriffith$elm_ui$Element$row,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-							]),
-						_List_fromArray(
-							[
-								$author$project$Main$viewMain(model),
-								$author$project$Main$vDivider,
-								$author$project$Main$viewCustomItems(model)
-							])))),
+							]))) : A2(
+					$mdgriffith$elm_ui$Element$row,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+						]),
+					_List_fromArray(
+						[
+							$author$project$Main$viewMain(model),
+							$author$project$Main$vDivider,
+							$author$project$Main$viewCustomItems(model)
+						]))),
 					$author$project$Main$viewFooter(model)
 				])));
 };
