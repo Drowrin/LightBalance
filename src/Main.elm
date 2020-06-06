@@ -983,7 +983,7 @@ view model =
 
         , hDivider
 
-        , el [width fill, scrollbarY ]
+        , el [ width fill, scrollbarY ]
         <| if model.viewAbout
             then viewAbout model
             else if isPortrait
@@ -991,7 +991,7 @@ view model =
                     [ height fill
                     , width fill
                     ]
-                    [ el [ scrollbarX ] <| viewMain model
+                    [ el [ scrollbarX, width fill ] <| viewMain model
                     , hDivider
                     , viewCustomItems model
                     ]

@@ -16991,7 +16991,10 @@ var $author$project$Main$view = function (model) {
 								A2(
 								$mdgriffith$elm_ui$Element$el,
 								_List_fromArray(
-									[$mdgriffith$elm_ui$Element$scrollbarX]),
+									[
+										$mdgriffith$elm_ui$Element$scrollbarX,
+										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+									]),
 								$author$project$Main$viewMain(model)),
 								$author$project$Main$hDivider,
 								$author$project$Main$viewCustomItems(model)
