@@ -16975,7 +16975,10 @@ var $author$project$Main$view = function (model) {
 					A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$scrollbarY]),
+						[
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+							$mdgriffith$elm_ui$Element$scrollbarY
+						]),
 					model.aS ? $author$project$Main$viewAbout(model) : (isPortrait ? A2(
 						$mdgriffith$elm_ui$Element$column,
 						_List_fromArray(

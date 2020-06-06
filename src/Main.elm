@@ -983,7 +983,7 @@ view model =
 
         , hDivider
 
-        , el [ scrollbarY ]
+        , el [width fill, scrollbarY ]
         <| if model.viewAbout
             then viewAbout model
             else if isPortrait
