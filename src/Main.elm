@@ -464,7 +464,7 @@ viewDataLoad model =
         spinner =
             image
                 imgAttr
-                { src = Url.toString { base | path = "/loading.gif" }
+                { src = Url.toString { base | path = base.path ++ "loading.gif" }
                 , description = ""
                 }
         refresh =
@@ -475,7 +475,7 @@ viewDataLoad model =
                         :: pointer 
                         :: imgAttr
                         )
-                        { src = Url.toString { base | path = "/refresh.png" }
+                        { src = Url.toString { base | path = base.path ++ "refresh.png" }
                         , description = ""
                         }
                 _ ->
