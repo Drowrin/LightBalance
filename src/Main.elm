@@ -17,6 +17,7 @@ import Element.Font as Font
 import Element.Border as Border
 import Element.Background as Background
 import Element.Events as Events
+import Element.Keyed as Keyed
 
 import Dict
 import List.Extra exposing (maximumBy)
@@ -482,18 +483,18 @@ viewDataLoad model =
         mainViews =
             case model.dataLoad of
                 LoadingManifest s ->
-                    [ spinner
-                    , text <| "Loading Manifest " ++ s
+                    [ ( "spinner", spinner )
+                    , ( "Loading Manifest", text <| "Loading Manifest " ++ s )
                     ]
                 NeedLogin ->
-                    [ text "Login Required" ]
+                    [ ( "Login Required", text "Login Required" ) ]
                 LoadingData ->
-                    [ spinner
-                    , text "Loading Data"
+                    [ ( "spinner", spinner )
+                    , ( "Loading Data", text "Loading Data" )
                     ]
                 LoadComplete ->
-                    [ refresh
-                    , text "Ready!"
+                    [ ( "refresh", refresh )
+                    , ( "Ready", text "Ready!" )
                     ]
         underView =
             case model.data of
@@ -517,7 +518,7 @@ viewDataLoad model =
                 _ ->
                     none
     in
-    row
+    Keyed.row
         [ width fill
         , height fill
         , padding 10
