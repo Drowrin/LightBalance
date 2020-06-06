@@ -16267,6 +16267,24 @@ var $author$project$Main$viewAuthState = function (model) {
 				mainViews)
 			]));
 };
+var $mdgriffith$elm_ui$Element$Keyed$row = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asRow,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.am + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.I)),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Keyed(children));
+	});
 var $author$project$Main$viewDataLoad = function (model) {
 	var underView = function () {
 		var _v4 = model.s;
@@ -16347,7 +16365,7 @@ var $author$project$Main$viewDataLoad = function (model) {
 					as: $elm$url$Url$toString(
 						_Utils_update(
 							base,
-							{i: '/refresh.png'}))
+							{i: base.i + 'refresh.png'}))
 				});
 		} else {
 			return $mdgriffith$elm_ui$Element$none;
@@ -16361,7 +16379,7 @@ var $author$project$Main$viewDataLoad = function (model) {
 			as: $elm$url$Url$toString(
 				_Utils_update(
 					base,
-					{i: '/loading.gif'}))
+					{i: base.i + 'loading.gif'}))
 		});
 	var mainViews = function () {
 		var _v0 = model.o;
@@ -16370,30 +16388,38 @@ var $author$project$Main$viewDataLoad = function (model) {
 				var s = _v0.a;
 				return _List_fromArray(
 					[
-						spinner,
-						$mdgriffith$elm_ui$Element$text('Loading Manifest ' + s)
+						_Utils_Tuple2('spinner', spinner),
+						_Utils_Tuple2(
+						'Loading Manifest',
+						$mdgriffith$elm_ui$Element$text('Loading Manifest ' + s))
 					]);
 			case 1:
 				return _List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$text('Login Required')
+						_Utils_Tuple2(
+						'Login Required',
+						$mdgriffith$elm_ui$Element$text('Login Required'))
 					]);
 			case 2:
 				return _List_fromArray(
 					[
-						spinner,
-						$mdgriffith$elm_ui$Element$text('Loading Data')
+						_Utils_Tuple2('spinner', spinner),
+						_Utils_Tuple2(
+						'Loading Data',
+						$mdgriffith$elm_ui$Element$text('Loading Data'))
 					]);
 			default:
 				return _List_fromArray(
 					[
-						refresh,
-						$mdgriffith$elm_ui$Element$text('Ready!')
+						_Utils_Tuple2('refresh', refresh),
+						_Utils_Tuple2(
+						'Ready',
+						$mdgriffith$elm_ui$Element$text('Ready!'))
 					]);
 		}
 	}();
 	return A2(
-		$mdgriffith$elm_ui$Element$row,
+		$mdgriffith$elm_ui$Element$Keyed$row,
 		_List_fromArray(
 			[
 				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
