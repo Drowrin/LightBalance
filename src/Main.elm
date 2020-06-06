@@ -983,14 +983,15 @@ view model =
 
         , hDivider
 
-        , if model.viewAbout
+        , el [ scrollbarY ]
+        <| if model.viewAbout
             then viewAbout model
             else if isPortrait
                 then column
                     [ height fill
                     , width fill
                     ]
-                    [ viewMain model
+                    [ el [ scrollbarX ] <| viewMain model
                     , hDivider
                     , viewCustomItems model
                     ]
