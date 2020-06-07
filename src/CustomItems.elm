@@ -8,8 +8,8 @@ type alias CustomItem =
     , bucket : String
     }
 
-nItem : String -> GenItem
-nItem b = CItem <| CustomItem "No Items" 750 b
+nItem : String -> CustomItem
+nItem b = CustomItem "No Name" 750 b
 
 type GenItem
     = RItem ResolvedItem

@@ -19,7 +19,7 @@ import Element.Background as Background
 import Element.Events as Events
 import Element.Keyed as Keyed
 
-import Dict
+import Dict exposing (Dict)
 import List.Extra exposing (maximumBy)
 
 import Api exposing
@@ -102,6 +102,9 @@ type alias Model =
     , data : DataState
     , dataLoad : DataLoadState
 
+    , customItems : Dict String CustomItem
+    , nextCustomId : Int
+
     , baseUrl : Url
 
     , w : Int
@@ -122,6 +125,8 @@ init flags url key =
             { flowState = UnAuth
             , data = NoData
             , dataLoad = LoadingManifest ""
+            , customItems = Dict.empty
+            , nextCustomId = 0
             , baseUrl = baseUrl
             , w = flags.w
             , h = flags.h
@@ -173,6 +178,11 @@ type Msg
 
     | GotFlowError FlowErrorType
     | GotDataError Http.Error
+
+    | AddCustomItem String
+    | EditCustomItemName String String
+    | EditCustomItemLight String String
+    | RemoveCustomItem String
 
     | Login
     | ReceivedBytes ( List Int )
@@ -233,6 +243,48 @@ update msg model = case msg of
         , Cmd.none
         )
     
+    -- Custom Item Messages
+
+    AddCustomItem b ->
+        ( { model
+          | customItems = Dict.insert ( String.fromInt model.nextCustomId ) ( nItem b ) model.customItems
+          , nextCustomId = model.nextCustomId + 1
+          }
+        , Cmd.none
+        )
+
+    EditCustomItemName id name ->
+        let
+            mitem = Dict.get id model.customItems
+        in
+        ( case mitem of
+            Just item ->
+                { model | customItems = Dict.insert id { item | name = name } model.customItems }
+            Nothing ->
+                model
+        , Cmd.none
+        )
+
+    EditCustomItemLight id lightStr ->
+        let
+            mitem = Dict.get id model.customItems
+            mlight = case lightStr of
+                "" -> Just 0
+                _ -> String.toInt lightStr
+        in
+        ( case ( mitem, mlight ) of
+            ( Just item, Just light ) ->
+                { model | customItems = Dict.insert id { item | light = light } model.customItems }
+            _ ->
+                model
+        , Cmd.none
+        )
+
+    RemoveCustomItem id ->
+        ( { model | customItems = Dict.remove id model.customItems }
+        , Cmd.none
+        )
+
     -- Authentication Flow Messages
 
     Login ->
@@ -421,8 +473,11 @@ textSize _ = 20
 bigTextSize : Model -> Int
 bigTextSize _ = 30
 
+medTextSize : Model -> Int
+medTextSize _ = 14
+
 smallTextSize : Model -> Int
-smallTextSize _ = 12
+smallTextSize _ = 10
 
 hDivider : Element Msg
 hDivider =
@@ -654,19 +709,31 @@ viewHeader model =
 
 selectItem : Model -> String -> GenItem
 selectItem model b =
+    let
+        citems =
+            List.filter
+                (\i -> i.bucket == b)
+                <| Dict.values model.customItems
+    in
     case model.data of
         DataComplete _ data ->
             case Dict.get b data of
                 Just l ->
-                    case maximumBy .light l of
-                        Just i ->
+                    case ( maximumBy .light l, maximumBy .light citems ) of
+                        ( Just i, Nothing ) ->
                             RItem i
+                        ( Nothing, Just ci ) ->
+                            CItem ci
+                        ( Just i, Just ci ) ->
+                            if i.light >= ci.light
+                            then RItem i
+                            else CItem ci
                         _ ->
-                            nItem b
+                            CItem <| nItem b
                 _ ->
-                    nItem b
+                    CItem <| nItem b
         _ ->
-            nItem b
+            CItem <| nItem b
 
 viewItem : Model -> GenItem -> Bool -> Element Msg
 viewItem model mitem canBalance =
@@ -856,13 +923,90 @@ viewMain model =
         , getAndViewLoadout model "Warlock"
         ]
 
+viewCustomItem : Model -> ( String, CustomItem ) -> Element Msg
+viewCustomItem model ( id, item ) =
+    el [ width <| px 190, Background.color bgColor3 ]
+    <| column
+        [ Font.size <| medTextSize model
+        , width fill
+        , padding 3
+        , spacing 5
+        ]
+        [ row
+            [ width fill
+            , spacing 2
+            ]
+            [ Input.text
+                [ width <| px 60
+                , Background.color <| rgba 0 0 0 0
+                ]
+                { onChange = EditCustomItemLight id
+                , text = if item.light == 0 then "" else String.fromInt item.light
+                , placeholder = Nothing
+                , label = Input.labelHidden "Item Light"
+                }
+            , Input.text
+                [ width fill
+                , Background.color <| rgba 0 0 0 0
+                ]
+                { onChange = EditCustomItemName id
+                , text = item.name
+                , placeholder = Nothing
+                , label = Input.labelHidden "Item Name"
+                }
+            ]
+        , el [ width fill, height <| px 20 ] <| el [ centerX ] <| text item.bucket
+        ]
+
 viewCustomItems : Model -> Element Msg
 viewCustomItems model =
-    wrappedRow
-        [ width <| minimum 400 <| fill
+    column
+        [ width fill
+        , height fill
         , padding 10
+        , spacing 10
         ]
-        [ text "Custom Items Not Yet Implemented." ]
+        [ row 
+            [ centerX, spacing 10 ]
+            [ text "Custom Items"
+            , text "TODO: save button"
+            ]
+        , row
+            [ centerX ]
+            [ el [ padding 5 ] <| text "New"
+            , wrappedRow
+                [ width fill
+                , Font.size <| smallTextSize model
+                , spacing 1
+                ]
+                <| List.map
+                    (\b ->
+                        Input.button
+                            [ focused []
+                            , padding 3
+                            , width fill
+                            , Background.color accColor
+                            ]
+                            { onPress = Just <| AddCustomItem b
+                            , label = el [ centerX] <| text b
+                            }
+                    )
+                    [ "Kinetic Weapons", "Energy Weapons", "Power Weapons"
+                    , "Hunter Helmet", "Hunter Gauntlets", "Hunter Chest Armor"
+                    , "Hunter Leg Armor", "Hunter Class Armor"
+                    , "Titan Helmet", "Titan Gauntlets", "Titan Chest Armor"
+                    , "Titan Leg Armor", "Titan Class Armor"
+                    , "Warlock Helmet", "Warlock Gauntlets", "Warlock Chest Armor"
+                    , "Warlock Leg Armor", "Warlock Class Armor"
+                    ]
+            ]
+        , hDivider
+        , wrappedRow
+            [ width fill, spacing 10 ]
+            <| List.map
+                ( viewCustomItem model )
+                <| Dict.toList model.customItems
+        ]
 
 viewFooter : Model -> Element Msg
 viewFooter model =
