@@ -925,14 +925,26 @@ viewMain model =
 
 viewCustomItem : Model -> ( String, CustomItem ) -> Element Msg
 viewCustomItem model ( id, item ) =
-    el [ width <| px 190, Background.color bgColor3 ]
+    el [ width <| minimum 190 <| maximum 240 <| fill, Background.color bgColor3 ]
     <| column
         [ Font.size <| medTextSize model
         , width fill
         , padding 3
         , spacing 5
+        , inFront <|
+            Input.button
+                [ focused []
+                , alignRight
+                , alignTop
+                , padding 3
+                ]
+                { onPress = Just ( RemoveCustomItem id )
+                , label = text "x"
+                }
         ]
-        [ row
+        [ el [ width fill, height <| px 20 ] <|
+            el [ centerX, centerY ] <| text item.bucket
+        , row
             [ width fill
             , spacing 2
             ]
@@ -955,7 +967,6 @@ viewCustomItem model ( id, item ) =
                 , label = Input.labelHidden "Item Name"
                 }
             ]
-        , el [ width fill, height <| px 20 ] <| el [ centerX ] <| text item.bucket
         ]
 
 viewCustomItems : Model -> Element Msg
