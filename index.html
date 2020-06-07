@@ -20,6 +20,12 @@
 
     var savedManifest = localStorage.getItem("lightbalance:data:manifest");
 
+    var rawSavedCItems = localStorage.getItem("lightbalance:data:savedcitems");
+    var savedCItems = rawSavedCItems ? rawSavedCItems : "{}";
+
+    var rawAutoSave = localStorage.getItem("lightbalance:config:autosave");
+    var autoSave = rawAutoSave ? JSON.parse(rawAutoSave) : false;
+
     var app = Elm.Main.init(
         { node: document.getElementById('elm')
         , flags:
@@ -27,8 +33,10 @@
             , h: window.innerHeight
 
             , bytes: bytes
+
             , manifest: savedManifest
-            , customItems: null
+            , customItems: savedCItems
+            , autoSave: autoSave
 		    }
         }
     );
@@ -43,7 +51,16 @@
 
     app.ports.saveManifest.subscribe( function (manifest) {
         localStorage.setItem("lightbalance:data:manifest", manifest);
-    })
+    });
+
+    app.ports.saveCItems.subscribe( function (cItems) {
+        localStorage.setItem("lightbalance:data:savedcitems", cItems);
+        setTimeout(function () { app.ports.doneSaving.send(null); }, 100);
+    });
+
+    app.ports.saveAutoSave.subscribe( function (b) {
+        localStorage.setItem("lightbalance:config:autosave", b);
+    });
     </script>
 </body>
 </html>

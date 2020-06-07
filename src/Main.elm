@@ -26,14 +26,15 @@ import Api exposing
     ( GeneralUser, DestinyMembership
     , Manifest, ManifestLinks, ItemManifest, EquipSlotManifest, ClassManifest, StatManifest, DataType
     )
-import CustomItems exposing (CustomItem, GenItem(..), nItem)
+import CustomItems exposing (CustomItem, CItemData, GenItem(..), nItem, encodeCItems, decodeCItems)
 
 type alias Flags =
     { w : Int
     , h : Int
     , bytes : Maybe ( List Int )
     , manifest : Maybe String
-    , customItems : Maybe String
+    , customItems : String
+    , autoSave : Bool
     }
 
 do : msg -> Cmd msg
@@ -58,16 +59,23 @@ port receivedBytes : ( List Int -> msg ) -> Sub msg
 
 port saveManifest : String -> Cmd msg
 
+port saveCItems : String -> Cmd msg
+port doneSaving : ( () -> msg ) -> Sub msg
+
+port saveAutoSave : Bool -> Cmd msg
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ receivedBytes ReceivedBytes
+        , doneSaving <| always DoneSaving
         , Browser.Events.onResize WindowResize
+
         , case ( model.flowState, model.data ) of
             ( FlowComplete token _ member, DataComplete manifest _ ) ->
                 Time.every
                     ( 60 * 1000 )
-                    ( RefreshData token member manifest )
+                    ( always <| GetData token member manifest )
             _ ->
                 Sub.none
         ]
@@ -97,13 +105,19 @@ type DataLoadState
     | LoadingData
     | LoadComplete
 
+type AddCItemMenu
+    = NotSelecting
+    | Selecting ( Maybe String )
+
 type alias Model =
     { flowState : FlowState
     , data : DataState
     , dataLoad : DataLoadState
 
-    , customItems : Dict String CustomItem
-    , nextCustomId : Int
+    , cItemMenu : AddCItemMenu
+    , isSaving : Bool
+    , autoSave : Bool
+    , customItems : CItemData
 
     , baseUrl : Url
 
@@ -125,8 +139,10 @@ init flags url key =
             { flowState = UnAuth
             , data = NoData
             , dataLoad = LoadingManifest ""
-            , customItems = Dict.empty
-            , nextCustomId = 0
+            , cItemMenu = NotSelecting
+            , isSaving = False
+            , autoSave = flags.autoSave
+            , customItems = decodeCItems flags.customItems
             , baseUrl = baseUrl
             , w = flags.w
             , h = flags.h
@@ -179,6 +195,11 @@ type Msg
     | GotFlowError FlowErrorType
     | GotDataError Http.Error
 
+    | SaveCItems
+    | DoneSaving
+    | SetAutoSave Bool
+    | ToggleCItemMenu
+    | SelectBucketClass String
     | AddCustomItem String
     | EditCustomItemName String String
     | EditCustomItemLight String String
@@ -202,11 +223,10 @@ type Msg
     | GotManifest Manifest
 
     | GetData OAuth.Token DestinyMembership Manifest
-    | RefreshData OAuth.Token DestinyMembership Manifest Time.Posix
     | GotData Manifest DataType
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model = case msg of
+update msg ( { customItems } as model ) = case msg of
     -- Basic Functionality Messages
 
     NoOp -> ( model, Cmd.none )
@@ -245,44 +265,94 @@ update msg model = case msg of
     
     -- Custom Item Messages
 
-    AddCustomItem b ->
-        ( { model
-          | customItems = Dict.insert ( String.fromInt model.nextCustomId ) ( nItem b ) model.customItems
-          , nextCustomId = model.nextCustomId + 1
+    SaveCItems ->
+        ( { model | isSaving = True }
+        , saveCItems <| encodeCItems model.customItems
+        )
+    
+    DoneSaving ->
+        ( { model | isSaving = False }
+        , Cmd.none
+        )
+    
+    SetAutoSave b ->
+        ( { model | autoSave = b }
+        , Cmd.batch
+            [ saveAutoSave b
+            , if b then do SaveCItems else Cmd.none
+            ]
+        )
+
+    ToggleCItemMenu ->
+        ( { model | cItemMenu = case model.cItemMenu of
+            NotSelecting -> Selecting Nothing
+            Selecting _ -> NotSelecting
           }
         , Cmd.none
+        )
+    
+    SelectBucketClass bc ->
+        ( { model | cItemMenu = Selecting <| Just bc }
+        , Cmd.none
+        )
+
+    AddCustomItem b ->
+        ( { model
+          | customItems =
+            { customItems
+            | items = Dict.insert ( String.fromInt customItems.nextId ) ( nItem b ) customItems.items
+            , nextId = customItems.nextId + 1
+            }
+          , cItemMenu = NotSelecting
+          }
+        , if model.autoSave then do SaveCItems else Cmd.none
         )
 
     EditCustomItemName id name ->
         let
-            mitem = Dict.get id model.customItems
+            mitem = Dict.get id customItems.items
         in
         ( case mitem of
             Just item ->
-                { model | customItems = Dict.insert id { item | name = name } model.customItems }
+                { model
+                | customItems =
+                    { customItems
+                    | items = Dict.insert id { item | name = name } customItems.items
+                    }
+                }
             Nothing ->
                 model
-        , Cmd.none
+        , if model.autoSave then do SaveCItems else Cmd.none
         )
 
     EditCustomItemLight id lightStr ->
         let
-            mitem = Dict.get id model.customItems
+            mitem = Dict.get id customItems.items
             mlight = case lightStr of
                 "" -> Just 0
                 _ -> String.toInt lightStr
         in
         ( case ( mitem, mlight ) of
             ( Just item, Just light ) ->
-                { model | customItems = Dict.insert id { item | light = light } model.customItems }
+                { model
+                | customItems =
+                    { customItems
+                    | items = Dict.insert id { item | light = light } customItems.items
+                    }
+                }
             _ ->
                 model
-        , Cmd.none
+        , if model.autoSave then do SaveCItems else Cmd.none
         )
 
     RemoveCustomItem id ->
-        ( { model | customItems = Dict.remove id model.customItems }
-        , Cmd.none
+        ( { model
+          | customItems =
+            { customItems
+            | items = Dict.remove id customItems.items
+            }
+          }
+        , if model.autoSave then do SaveCItems else Cmd.none
         )
 
     -- Authentication Flow Messages
@@ -433,11 +503,6 @@ update msg model = case msg of
             ( GotData manifest )
         )
 
-    RefreshData token member manifest _ ->
-        ( model
-        , do <| GetData token member manifest
-        )
-
     GotData manifest data ->
         ( { model
           | dataLoad = LoadComplete
@@ -460,6 +525,9 @@ txtColor = rgb255 250 250 250
 
 accColor : Color
 accColor = rgb255 120 120 190
+
+selColor : Color
+selColor = rgb255 140 140 200
 
 yesColor : Color
 yesColor = rgb255 140 200 140
@@ -713,7 +781,7 @@ selectItem model b =
         citems =
             List.filter
                 (\i -> i.bucket == b)
-                <| Dict.values model.customItems
+                <| Dict.values model.customItems.items
     in
     case model.data of
         DataComplete _ data ->
@@ -912,9 +980,9 @@ getAndViewLoadout model b =
 viewMain : Model -> Element Msg
 viewMain model =
     row
-        [ width <| minimum 620 <| fill
+        [ width <| minimum 630 <| fill
         , spacing 10
-        , padding 10
+        , paddingXY 0 10
         ]
         [ getAndViewLoadout model "Hunter"
         , vDivider
@@ -925,7 +993,7 @@ viewMain model =
 
 viewCustomItem : Model -> ( String, CustomItem ) -> Element Msg
 viewCustomItem model ( id, item ) =
-    el [ width <| minimum 190 <| maximum 240 <| fill, Background.color bgColor3 ]
+    el [ width <| px 190, Background.color bgColor3 ]
     <| column
         [ Font.size <| medTextSize model
         , width fill
@@ -969,55 +1037,113 @@ viewCustomItem model ( id, item ) =
             ]
         ]
 
-viewCustomItems : Model -> Element Msg
-viewCustomItems model =
-    column
+viewCustomItemMenu : Model -> Element Msg
+viewCustomItemMenu model =
+    let
+        menuOption s selected = el
+            [ width fill
+            , Background.color <| if selected then selColor else accColor
+            ]
+            <| el [ centerX, centerY, padding 5 ]
+            <| text s
+        cIMenuView =
+            column
+                [ width fill, spacing 1, paddingXY 0 1, Background.color bgColor ]
+                <| case model.cItemMenu of
+                    Selecting mbc ->
+                        [ row [ width fill, spacing 1 ] <| List.map
+                            (\s -> Input.button
+                                [ width fill, focused [] ]
+                                { onPress = Just <| SelectBucketClass s
+                                , label = menuOption s ( Just s == mbc )
+                                }
+                            )
+                            [ "Weapon", "Hunter", "Titan", "Warlock" ]
+                        , case mbc of
+                            Just bc ->
+                                row [ width fill, spacing 1 ] <| List.map
+                                    (\s -> Input.button
+                                        [ width fill, focused [] ]
+                                        { onPress = Just <| AddCustomItem <| bc ++ " " ++ s
+                                        , label = menuOption s False
+                                        }
+                                    )
+                                    <| case bc of
+                                        "Weapon" -> [ "Kinetic", "Energy", "Power" ]
+                                        _ -> [ "Helmet", "Gauntlets", "Chest Armor", "Leg Armor", "Class Armor" ]
+                            Nothing ->
+                                none
+                        ]
+                    _ -> []
+    in
+    row 
         [ width fill
-        , height fill
+        , below <| cIMenuView
         , padding 10
-        , spacing 10
+        , Font.size <| medTextSize model
         ]
-        [ row 
+        [ row
             [ centerX, spacing 10 ]
             [ text "Custom Items"
-            , text "TODO: save button"
-            ]
-        , row
-            [ centerX ]
-            [ el [ padding 5 ] <| text "New"
-            , wrappedRow
-                [ width fill
-                , Font.size <| smallTextSize model
-                , spacing 1
-                ]
-                <| List.map
-                    (\b ->
-                        Input.button
-                            [ focused []
-                            , padding 3
-                            , width fill
-                            , Background.color accColor
-                            ]
-                            { onPress = Just <| AddCustomItem b
-                            , label = el [ centerX] <| text b
-                            }
-                    )
-                    [ "Kinetic Weapons", "Energy Weapons", "Power Weapons"
-                    , "Hunter Helmet", "Hunter Gauntlets", "Hunter Chest Armor"
-                    , "Hunter Leg Armor", "Hunter Class Armor"
-                    , "Titan Helmet", "Titan Gauntlets", "Titan Chest Armor"
-                    , "Titan Leg Armor", "Titan Class Armor"
-                    , "Warlock Helmet", "Warlock Gauntlets", "Warlock Chest Armor"
-                    , "Warlock Leg Armor", "Warlock Class Armor"
+            , Input.button
+                [ focused [] ]
+                { onPress = Just ToggleCItemMenu
+                , label = el [ width <| px 90, Background.color accColor ]
+                    <| row
+                    [ padding 5, spacing 3, width fill ]
+                    [ image
+                        [ width <| px 20
+                        , height <| px 20
+                        ]
+                        { src = case model.cItemMenu of
+                            NotSelecting -> "add.png"
+                            Selecting _ -> "close.png"
+                        , description = ""
+                        }
+                    , el [ centerX, centerY ]
+                        <| text <| case model.cItemMenu of
+                            NotSelecting -> "Add New"
+                            Selecting _ -> "Cancel"
                     ]
+                }
+            , Input.button
+                [ focused [] ]
+                { onPress = Just SaveCItems
+                , label = el [ width <| px 80, Background.color accColor ]
+                    <| row
+                    [ padding 5, spacing 3, width fill ]
+                    [ image
+                        [ width <| px 20
+                        , height <| px 20
+                        ]
+                        { src = if model.isSaving
+                            then "loading.gif"
+                            else "save.png"
+                        , description = ""
+                        }
+                    , el [ centerX, centerY ]
+                        <| text <| if model.isSaving
+                            then "Saving"
+                            else "Save"
+                    ]
+                }
+            , Input.checkbox
+                [ ]
+                { onChange = SetAutoSave
+                , icon = Input.defaultCheckbox
+                , checked = model.autoSave
+                , label = Input.labelRight [ focused [] ] <| text "auto save"
+                }
             ]
-        , hDivider
-        , wrappedRow
-            [ width fill, spacing 10 ]
-            <| List.map
-                ( viewCustomItem model )
-                <| Dict.toList model.customItems
         ]
+
+viewCustomItems : Model -> Element Msg
+viewCustomItems model =
+    wrappedRow
+        [ width fill, spacing 10, padding 20, centerX ]
+        <| List.map
+            ( viewCustomItem model )
+            <| Dict.toList model.customItems.items
 
 viewFooter : Model -> Element Msg
 viewFooter model =
@@ -1141,12 +1267,14 @@ view model =
         , if model.viewAbout
             then viewAbout model
             else if isPortrait
-                then el [ width fill, scrollbarY ] 
+                then el [ width fill, height fill, scrollbarY ] 
                     <| column
                     [ height fill
                     , width fill
                     ]
                     [ el [ scrollbarX, width fill ] <| viewMain model
+                    , hDivider
+                    , viewCustomItemMenu model
                     , hDivider
                     , viewCustomItems model
                     ]
@@ -1156,7 +1284,12 @@ view model =
                     ]
                     [ viewMain model
                     , vDivider
-                    , viewCustomItems model
+                    , column
+                        [ width fill, alignTop ]
+                        [ viewCustomItemMenu model
+                        , hDivider
+                        , viewCustomItems model
+                        ]
                     ]
         
         , viewFooter model
