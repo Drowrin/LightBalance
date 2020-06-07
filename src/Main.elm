@@ -671,7 +671,7 @@ selectItem model b =
 viewItem : Model -> GenItem -> Bool -> Element Msg
 viewItem model mitem canBalance =
     let
-        size = px 80
+        size = px 85
         iText s = 
             el [ Background.color bgColor3, alpha 0.8 ] <|
             el [ padding 2, Font.size <| smallTextSize model ] <| text s
@@ -815,7 +815,7 @@ getAndViewLoadout model b =
             ]
             <| text b
 
-        , row [ width fill ]
+        , row [ width fill, spacing 10 ]
             [ column [ width fill, centerY, spacing 10 ]
                 [ iView .kinetic
                 , iView .energy
@@ -845,7 +845,7 @@ getAndViewLoadout model b =
 viewMain : Model -> Element Msg
 viewMain model =
     row
-        [ width <| minimum 600 <| fill
+        [ width <| minimum 620 <| fill
         , spacing 10
         , padding 10
         ]

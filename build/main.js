@@ -16699,7 +16699,7 @@ var $mdgriffith$elm_ui$Element$Border$width = function (v) {
 };
 var $author$project$Main$viewItem = F3(
 	function (model, mitem, canBalance) {
-		var size = $mdgriffith$elm_ui$Element$px(80);
+		var size = $mdgriffith$elm_ui$Element$px(85);
 		var iText = function (s) {
 			return A2(
 				$mdgriffith$elm_ui$Element$el,
@@ -16837,7 +16837,8 @@ var $author$project$Main$getAndViewLoadout = F2(
 					$mdgriffith$elm_ui$Element$row,
 					_List_fromArray(
 						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+							$mdgriffith$elm_ui$Element$spacing(10)
 						]),
 					_List_fromArray(
 						[
@@ -16935,7 +16936,7 @@ var $author$project$Main$viewMain = function (model) {
 		_List_fromArray(
 			[
 				$mdgriffith$elm_ui$Element$width(
-				A2($mdgriffith$elm_ui$Element$minimum, 600, $mdgriffith$elm_ui$Element$fill)),
+				A2($mdgriffith$elm_ui$Element$minimum, 620, $mdgriffith$elm_ui$Element$fill)),
 				$mdgriffith$elm_ui$Element$spacing(10),
 				$mdgriffith$elm_ui$Element$padding(10)
 			]),
