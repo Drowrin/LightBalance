@@ -822,12 +822,12 @@ viewItem model mitem canBalance =
             ( inFront <| el [ alignRight, alignBottom] <| iText <| String.fromInt light )
             ::
             blockAttr
-        attr name =
+        attr name onlyOnHover =
             [ width fill
             , inFront <| el
                 [ width fill
                 , height fill
-                , transparent True
+                , transparent onlyOnHover
                 , mouseOver [ transparent False ]
                 ]
                 <| el
@@ -839,10 +839,10 @@ viewItem model mitem canBalance =
         case mitem of
             CItem i ->
                 if i.light <= 750
-                then el ( attr i.name ) <| el blockAttr none
-                else el ( attr i.name ) <| el ( itemAttr i.light ) none
+                then el ( attr i.name False ) <| el blockAttr none
+                else el ( attr i.name False ) <| el ( itemAttr i.light ) none
             RItem i ->
-                el ( attr i.name ) <|
+                el ( attr i.name True ) <|
                     image
                         ( itemAttr i.light )
                         { src = Url.toString i.icon

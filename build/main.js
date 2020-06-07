@@ -18432,31 +18432,32 @@ var $author$project$Main$viewItem = F3(
 							$elm$core$String$fromInt(light)))),
 				blockAttr);
 		};
-		var attr = function (name) {
-			return _List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					$mdgriffith$elm_ui$Element$inFront(
-					A2(
-						$mdgriffith$elm_ui$Element$el,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$transparent(true),
-								$mdgriffith$elm_ui$Element$mouseOver(
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$transparent(false)
-									]))
-							]),
+		var attr = F2(
+			function (name, onlyOnHover) {
+				return _List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$inFront(
 						A2(
 							$mdgriffith$elm_ui$Element$el,
 							_List_fromArray(
-								[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
-							iText(name))))
-				]);
-		};
+								[
+									$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+									$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+									$mdgriffith$elm_ui$Element$transparent(onlyOnHover),
+									$mdgriffith$elm_ui$Element$mouseOver(
+									_List_fromArray(
+										[
+											$mdgriffith$elm_ui$Element$transparent(false)
+										]))
+								]),
+							A2(
+								$mdgriffith$elm_ui$Element$el,
+								_List_fromArray(
+									[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
+								iText(name))))
+					]);
+			});
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -18468,10 +18469,10 @@ var $author$project$Main$viewItem = F3(
 					var i = mitem.a;
 					return (i.bR <= 750) ? A2(
 						$mdgriffith$elm_ui$Element$el,
-						attr(i.F),
+						A2(attr, i.F, false),
 						A2($mdgriffith$elm_ui$Element$el, blockAttr, $mdgriffith$elm_ui$Element$none)) : A2(
 						$mdgriffith$elm_ui$Element$el,
-						attr(i.F),
+						A2(attr, i.F, false),
 						A2(
 							$mdgriffith$elm_ui$Element$el,
 							itemAttr(i.bR),
@@ -18480,7 +18481,7 @@ var $author$project$Main$viewItem = F3(
 					var i = mitem.a;
 					return A2(
 						$mdgriffith$elm_ui$Element$el,
-						attr(i.F),
+						A2(attr, i.F, true),
 						A2(
 							$mdgriffith$elm_ui$Element$image,
 							itemAttr(i.bR),
