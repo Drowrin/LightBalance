@@ -16473,7 +16473,7 @@ var $author$project$Main$viewCustomItemMenu = function (model) {
 									});
 							},
 							_List_fromArray(
-								['Weapon', 'Hunter', 'Titan', 'Warlock']))),
+								['Weapons', 'Hunter', 'Titan', 'Warlock']))),
 						function () {
 						if (!mbc.$) {
 							var bc = mbc.a;
@@ -16497,11 +16497,12 @@ var $author$project$Main$viewCustomItemMenu = function (model) {
 											{
 												r: A2(menuOption, s, false),
 												L: $elm$core$Maybe$Just(
-													$author$project$Main$AddCustomItem(bc + (' ' + s)))
+													$author$project$Main$AddCustomItem(
+														(bc === 'Weapons') ? (s + (' ' + bc)) : (bc + (' ' + s))))
 											});
 									},
 									function () {
-										if (bc === 'Weapon') {
+										if (bc === 'Weapons') {
 											return _List_fromArray(
 												['Kinetic', 'Energy', 'Power']);
 										} else {
@@ -18306,52 +18307,43 @@ var $author$project$Main$selectItem = F2(
 				return _Utils_eq(i.ap, b);
 			},
 			$elm$core$Dict$values(model.l.aO));
+		var defaultItem = function () {
+			var _v3 = A2(
+				$elm_community$list_extra$List$Extra$maximumBy,
+				function ($) {
+					return $.bR;
+				},
+				citems);
+			if (!_v3.$) {
+				var ci = _v3.a;
+				return ci;
+			} else {
+				return $author$project$CustomItems$nItem(b);
+			}
+		}();
 		var _v0 = model.t;
 		if (_v0.$ === 3) {
 			var data = _v0.b;
 			var _v1 = A2($elm$core$Dict$get, b, data);
 			if (!_v1.$) {
 				var l = _v1.a;
-				var _v2 = _Utils_Tuple2(
-					A2(
-						$elm_community$list_extra$List$Extra$maximumBy,
-						function ($) {
-							return $.bR;
-						},
-						l),
-					A2(
-						$elm_community$list_extra$List$Extra$maximumBy,
-						function ($) {
-							return $.bR;
-						},
-						citems));
-				if (_v2.a.$ === 1) {
-					if (!_v2.b.$) {
-						var _v4 = _v2.a;
-						var ci = _v2.b.a;
-						return $author$project$CustomItems$CItem(ci);
-					} else {
-						return $author$project$CustomItems$CItem(
-							$author$project$CustomItems$nItem(b));
-					}
+				var _v2 = A2(
+					$elm_community$list_extra$List$Extra$maximumBy,
+					function ($) {
+						return $.bR;
+					},
+					l);
+				if (!_v2.$) {
+					var i = _v2.a;
+					return (_Utils_cmp(i.bR, defaultItem.bR) > -1) ? $author$project$CustomItems$RItem(i) : $author$project$CustomItems$CItem(defaultItem);
 				} else {
-					if (_v2.b.$ === 1) {
-						var i = _v2.a.a;
-						var _v3 = _v2.b;
-						return $author$project$CustomItems$RItem(i);
-					} else {
-						var i = _v2.a.a;
-						var ci = _v2.b.a;
-						return (_Utils_cmp(i.bR, ci.bR) > -1) ? $author$project$CustomItems$RItem(i) : $author$project$CustomItems$CItem(ci);
-					}
+					return $author$project$CustomItems$CItem(defaultItem);
 				}
 			} else {
-				return $author$project$CustomItems$CItem(
-					$author$project$CustomItems$nItem(b));
+				return $author$project$CustomItems$CItem(defaultItem);
 			}
 		} else {
-			return $author$project$CustomItems$CItem(
-				$author$project$CustomItems$nItem(b));
+			return $author$project$CustomItems$CItem(defaultItem);
 		}
 	});
 var $author$project$Main$getLoadout = F2(

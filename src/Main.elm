@@ -782,26 +782,26 @@ selectItem model b =
             List.filter
                 (\i -> i.bucket == b)
                 <| Dict.values model.customItems.items
+        defaultItem =
+            case maximumBy .light citems of
+                Just ci -> ci
+                Nothing -> nItem b
     in
     case model.data of
         DataComplete _ data ->
             case Dict.get b data of
                 Just l ->
-                    case ( maximumBy .light l, maximumBy .light citems ) of
-                        ( Just i, Nothing ) ->
-                            RItem i
-                        ( Nothing, Just ci ) ->
-                            CItem ci
-                        ( Just i, Just ci ) ->
-                            if i.light >= ci.light
+                    case maximumBy .light l of
+                        Just i ->
+                            if i.light >= defaultItem.light
                             then RItem i
-                            else CItem ci
+                            else CItem defaultItem
                         _ ->
-                            CItem <| nItem b
+                            CItem defaultItem
                 _ ->
-                    CItem <| nItem b
+                    CItem defaultItem
         _ ->
-            CItem <| nItem b
+            CItem defaultItem
 
 viewItem : Model -> GenItem -> Bool -> Element Msg
 viewItem model mitem canBalance =
@@ -1058,18 +1058,21 @@ viewCustomItemMenu model =
                                 , label = menuOption s ( Just s == mbc )
                                 }
                             )
-                            [ "Weapon", "Hunter", "Titan", "Warlock" ]
+                            [ "Weapons", "Hunter", "Titan", "Warlock" ]
                         , case mbc of
                             Just bc ->
                                 row [ width fill, spacing 1 ] <| List.map
                                     (\s -> Input.button
                                         [ width fill, focused [] ]
-                                        { onPress = Just <| AddCustomItem <| bc ++ " " ++ s
+                                        { onPress = Just <| AddCustomItem <|
+                                            if bc == "Weapons"
+                                            then s ++ " " ++ bc
+                                            else bc ++ " " ++ s
                                         , label = menuOption s False
                                         }
                                     )
                                     <| case bc of
-                                        "Weapon" -> [ "Kinetic", "Energy", "Power" ]
+                                        "Weapons" -> [ "Kinetic", "Energy", "Power" ]
                                         _ -> [ "Helmet", "Gauntlets", "Chest Armor", "Leg Armor", "Class Armor" ]
                             Nothing ->
                                 none
