@@ -936,7 +936,7 @@ getAndViewLoadout model b =
             viewItem
                 model
                 ( getter loadout )
-                ( ( lValue <| getter loadout ) < bLoadout.light && canBalance )
+                ( ( lValue <| getter loadout ) < loadout.light && canBalance )
     in
     column
         [ width fill

@@ -18497,7 +18497,7 @@ var $author$project$Main$getAndViewLoadout = F2(
 				(_Utils_cmp(
 					$author$project$Main$lValue(
 						getter(loadout)),
-					bLoadout.bR) < 0) && canBalance);
+					loadout.bR) < 0) && canBalance);
 		};
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
